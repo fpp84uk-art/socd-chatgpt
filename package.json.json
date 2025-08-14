@@ -1,0 +1,22 @@
+{
+  "name": "socd-webhooks-facade",
+  "version": "1.0.0",
+  "description": "SOCD Webhooks API (Express) com forward para n8n via Webhook Trigger",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
