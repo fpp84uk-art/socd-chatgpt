@@ -1,0 +1,246 @@
+openapi: 3.1.0
+info:
+  title: SOCD Webhooks API
+  version: 1.0.0
+servers:
+  - url: https://SEU-SERVIDOR
+paths:
+  /webhook/health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /webhook/catalog/product:
+    post:
+      summary: Receber evento de produto de catálogo
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductEvent'
+      responses:
+        '200':
+          description: Recebido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+  /webhook/orders/get:
+    post:
+      summary: Obter pedido por ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderGetRequest'
+      responses:
+        '200':
+          description: Pedido retornado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdersGetResponse'
+  /webhook/orders/list:
+    post:
+      summary: Listar pedidos
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdersListRequest'
+      responses:
+        '200':
+          description: Lista de pedidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdersListResponse'
+  /webhook/inventory/sku:
+    post:
+      summary: Consultar estoque por SKU
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkuRequest'
+      responses:
+        '200':
+          description: Nível de estoque
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventorySkuResponse'
+  /webhook/pricing/sku:
+    post:
+      summary: Consultar preço por SKU
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkuRequest'
+      responses:
+        '200':
+          description: Preço atual do SKU
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingSkuResponse'
+components:
+  schemas:
+    OrderGetRequest:
+      type: object
+      properties:
+        orderId:
+          type: string
+      required: [orderId]
+      additionalProperties: false
+    OrdersListRequest:
+      type: object
+      properties:
+        createdFrom:
+          type: string
+          format: date-time
+        createdTo:
+          type: string
+          format: date-time
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      additionalProperties: false
+    SkuRequest:
+      type: object
+      properties:
+        sku:
+          type: string
+          example: 'SKU-123'
+      required: [sku]
+      additionalProperties: false
+    ProductEvent:
+      type: object
+      properties:
+        productId:
+          type: string
+        id:
+          type: string
+      additionalProperties: true
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+      required: [status]
+    ProductResponse:
+      type: object
+      properties:
+        received:
+          type: boolean
+          example: true
+        productId:
+          type: string
+          example: '7092'
+      required: [received]
+    OrdersGetResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+        status:
+          type: string
+          example: invoiced
+        total:
+          type: number
+          format: float
+          example: 350
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        customer:
+          $ref: '#/components/schemas/Customer'
+      required: [orderId, status, items]
+    OrdersListResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrdersGetResponse'
+      required: [total, orders]
+    InventorySkuResponse:
+      type: object
+      properties:
+        sku:
+          type: string
+        available:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+      required: [sku, available]
+    PricingSkuResponse:
+      type: object
+      properties:
+        sku:
+          type: string
+        price:
+          type: number
+          format: float
+        listPrice:
+          type: number
+          format: float
+        currency:
+          type: string
+          example: BRL
+        updatedAt:
+          type: string
+          format: date-time
+      required: [sku, price, currency]
+    OrderItem:
+      type: object
+      properties:
+        sku:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: float
+      required: [sku, quantity, price]
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
